@@ -1,11 +1,14 @@
 import { HTTP_METHODS } from "../_constants/HttpMethods.ts";
+import { loginEmployee } from "../_handler/LoginEmp.ts";
 import { signupEmpleyee } from "../_handler/SignUpEmployee.ts";
 import { EMPLOYEE_PROFILE_PATH } from "./RoutPaths.ts";
 
 
 
 export const EMPLOYEE_ROUTS={
-    [HTTP_METHODS.POST]:{[EMPLOYEE_PROFILE_PATH.CREATE_EMPLOYEE_PROFILE]:signupEmpleyee
+    [HTTP_METHODS.POST]:{[EMPLOYEE_PROFILE_PATH.CREATE_EMPLOYEE_PROFILE]:signupEmpleyee,
+
+        [EMPLOYEE_PROFILE_PATH.EMPLOYE_LOGIN]:loginEmployee
         
     },
     
