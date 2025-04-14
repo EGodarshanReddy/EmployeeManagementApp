@@ -74,3 +74,21 @@ export async function getEmployee(id:string){
   }
   return data;  
 }
+
+
+export async function getEmp(id:string) {
+  const { data, error } = await supabase
+    .from(TABLE_NAMES.EMPLOYEES)
+    .select("*")    
+    .eq("id", id)
+    .maybeSingle();
+    if (error) {      
+      throw new Error("Something went wrong while getting data from employee " + error.message);
+    }
+  
+    if (!data) {
+      return ErrorResponse(HTTP_STATUS_CODE.NOT_FOUND, "No Employee Found");
+    }
+  
+    return data;
+}

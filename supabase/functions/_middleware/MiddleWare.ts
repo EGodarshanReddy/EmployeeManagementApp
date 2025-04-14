@@ -55,7 +55,7 @@ export const checkUserAuthentication = function checkUserAuthentication(
 
             const user = {
                 ...params,
-                id: String(payload.id),
+                emp_id: String(payload.id),
                 email: empData.mail_Id,
             };
 
