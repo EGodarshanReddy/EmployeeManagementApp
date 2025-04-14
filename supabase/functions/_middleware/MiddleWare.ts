@@ -1,7 +1,11 @@
 import supabase from "../_config/SupabaseDBClient.ts";
 import { COMMON_ERROR_MESSAGES } from "../_constants/ErrorResponseErrorMessage.ts";
 import { HTTP_STATUS_CODE } from "../_constants/HttpStatesCode.ts";
+import { getEmployee } from "../_repository/EmployeeRepo.ts";
+import { createCryptoKey, verifyJWT } from "../_utils/CreateAndVerifyJWT.ts";
 import ErrorResponse from "../_utils/Response.ts";
+
+
 
 export const checkUserAuthentication = function checkUserAuthentication(
     handler: (
@@ -15,86 +19,54 @@ export const checkUserAuthentication = function checkUserAuthentication(
         params: Record<string, string>,
     ): Promise<Response> {
         try {
-            // Getting token from header
+            // Extract token from Authorization header
             const token = req.headers.get("Authorization");
-            console.log("User Token: ", token);
- 
-            if (!token) {
-                console.log("First check");
-                return ErrorResponse(
-                     HTTP_STATUS_CODE.UNAUTHORIZED,
-                     COMMON_ERROR_MESSAGES.MISSING_JWT_TOKEN
-                );
-            }
- 
-            // Getting userData from auth table by token
-            const jwt = token.replace("Bearer ", "");
-            const { data: userData, error: authError } = await supabase.auth.getUser(jwt);
-            if (authError || !userData) {
-                console.log("User session expired");
-                return ErrorResponse(
-                     HTTP_STATUS_CODE.UNAUTHORIZED,
-                     COMMON_ERROR_MESSAGES.MISSING_JWT_TOKEN
-                );
-            }
- 
-            // Getting user details from users table by id
-            const id = userData.user.id;
-            console.log("User id: ", id);
+            console.log("User Token:", token);
 
-            const { data, error } = await supabase
-                .from("users")
-                .select('account_status,lockout_time,user_type')
-                .eq("user_id", id)
-                .in("account_status", ['A', 'S'])
-                .single();
- 
-            if (error) {
+            if (!token) {
                 return ErrorResponse(
-                     HTTP_STATUS_CODE.INTERNAL_SERVER_ERROR,
-                     COMMON_ERROR_MESSAGES.DATABASE_ERROR
+                    HTTP_STATUS_CODE.UNAUTHORIZED,
+                    COMMON_ERROR_MESSAGES.MISSING_JWT_TOKEN,
                 );
             }
- 
-            if (!data) {
+
+            const jwt = token.replace("Bearer ", "").trim();
+            const secret = "Godarshan*reddy^Enamala@Authentication&4system123456!@";
+            const key = await createCryptoKey(secret);
+
+            const payload = await verifyJWT(jwt, key);
+
+            if (!payload || !payload.id) {
                 return ErrorResponse(
-                     HTTP_STATUS_CODE.NOT_FOUND,
-                     "User Not Found"
+                    HTTP_STATUS_CODE.UNAUTHORIZED,
+                    COMMON_ERROR_MESSAGES.UNAUTHORIZED_ACCESS,
                 );
             }
- 
-            if (data.account_status === 'S') {
+
+            // Fetch employee data using ID from JWT
+            const empData = await getEmployee(String(payload.id));
+
+            if (!empData) {
                 return ErrorResponse(
-                      HTTP_STATUS_CODE.FORBIDDEN,
-                     `$Your Account is deactivated, Try after ${data.lockout_time}`
+                    HTTP_STATUS_CODE.NOT_FOUND,
+                    "User not found.",
                 );
             }
- 
-            // Checking for user role
-            if (!roles.includes(data.user_type)) {
-                return ErrorResponse(
-                     HTTP_STATUS_CODE.FORBIDDEN,
-                     COMMON_ERROR_MESSAGES.UNAUTHORIZED_ACCESS
-                );
-            }
- 
-            // If the user has access permission, pass user details to the handler
+
             const user = {
                 ...params,
-                user_id: id,
-                account_status: data.account_status,
-                user_type: data.user_type,
-                token: jwt
+                id: String(payload.id),
+                email: empData.mail_Id,
             };
-            console.log("Valid user");
- 
-            return await handler(req, user); // Fixed here: passing the correct parameters
- 
+
+            // Authorized → pass control to handler with user info
+            return await handler(req, user);
+
         } catch (error) {
-            console.error(error);
+            console.error("Authentication Error:", error);
             return ErrorResponse(
-                 HTTP_STATUS_CODE.INTERNAL_SERVER_ERROR,
-                 COMMON_ERROR_MESSAGES.INTERNAL_SERVER_ERROR
+                HTTP_STATUS_CODE.INTERNAL_SERVER_ERROR,
+                COMMON_ERROR_MESSAGES.INTERNAL_SERVER_ERROR,
             );
         }
     };

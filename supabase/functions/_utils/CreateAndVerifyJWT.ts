@@ -1,5 +1,8 @@
 // For loading .env variables
 import { create, getNumericDate, Header, Payload, verify } from "https://deno.land/x/djwt/mod.ts";  // Latest version
+import { HTTP_STATUS_CODE } from "../_constants/HttpStatesCode.ts";
+import { COMMON_ERROR_MESSAGES } from "../_constants/ErrorResponseErrorMessage.ts";
+import ErrorResponse from "./Response.ts";
 
 // Load environment variables from .env file
 
@@ -42,17 +45,9 @@ export async function createCryptoKey(secret: string): Promise<CryptoKey> {
   }
 
 
-  export async function veryJWT(jwt: string,key: CryptoKey | null,) {
-
-    try {
+  export async function verifyJWT(jwt: string,key: CryptoKey | null,) {   
       const verifiedToken = await verify(jwt, key);
-      return verifiedToken;
-    } catch (error) {
-      console.error("Error verifying JWT:", error);
-      return null;
-    }
-
-    
+      return verifiedToken;      
   }
   
 

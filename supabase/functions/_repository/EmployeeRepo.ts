@@ -54,3 +54,23 @@ export async function createEmployee(email: string, password: string, mobileNumb
 
   return data;
 }
+
+
+export async function getEmployee(id:string){
+
+  const {data,error} = await supabase
+  .from(TABLE_NAMES.EMPLOYEES)
+  .select("*")
+  .eq("id", id)
+  .maybeSingle();
+  
+
+  if(error){
+      console.log(error.message+"---");
+      throw new Error(error.message);
+  }
+  if(!data){    
+      return ErrorResponse(HTTP_STATUS_CODE.NOT_FOUND,"No Employee Found");
+  }
+  return data;  
+}
