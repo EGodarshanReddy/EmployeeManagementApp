@@ -1,5 +1,5 @@
 import { HTTP_STATUS_CODE } from "../_constants/HttpStatesCode.ts";
-import { getEmp, getEmployee } from "../_repository/EmployeeRepo.ts";
+import { getEmp} from "../_repository/EmployeeRepo.ts";
 import ErrorResponse, { SuccessResponse } from "../_utils/Response.ts";
 
 
@@ -12,6 +12,8 @@ export async function getEmployeeById(_req:Request,params:Record<string, string>
         return SuccessResponse("Employee Fetched Successfully",200,data);
     }
     catch(error){
+
+        console.error(error);
         return ErrorResponse(HTTP_STATUS_CODE.INTERNAL_SERVER_ERROR,"InternalServerError");
     }
     

@@ -33,9 +33,9 @@ export const checkUserAuthentication = function checkUserAuthentication(
             const jwt = token.replace("Bearer ", "").trim();
             const secret = "Godarshan*reddy^Enamala@Authentication&4system123456!@";
             const key = await createCryptoKey(secret);
-
+            console.log("key", key);
             const payload = await verifyJWT(jwt, key);
-
+            console.log("payload", payload);
             if (!payload || !payload.id) {
                 return ErrorResponse(
                     HTTP_STATUS_CODE.UNAUTHORIZED,
@@ -52,6 +52,7 @@ export const checkUserAuthentication = function checkUserAuthentication(
                     "User not found.",
                 );
             }
+            console.log("empData", empData);
 
             const user = {
                 ...params,

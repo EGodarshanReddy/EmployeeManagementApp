@@ -57,13 +57,12 @@ export async function createEmployee(email: string, password: string, mobileNumb
 
 
 export async function getEmployee(id:string){
-
+  console.log("Getting Employee... started");
   const {data,error} = await supabase
   .from(TABLE_NAMES.EMPLOYEES)
   .select("*")
   .eq("id", id)
-  .maybeSingle();
-  
+  .maybeSingle();  
 
   if(error){
       console.log(error.message+"---");
@@ -72,23 +71,28 @@ export async function getEmployee(id:string){
   if(!data){    
       return ErrorResponse(HTTP_STATUS_CODE.NOT_FOUND,"No Employee Found");
   }
+
+  console.log("Employee data:"+data);
   return data;  
 }
 
 
 export async function getEmp(id:string) {
+  console.log("Getting Employee... started");
   const { data, error } = await supabase
     .from(TABLE_NAMES.EMPLOYEES)
     .select("*")    
     .eq("id", id)
-    .maybeSingle();
-    if (error) {      
+    .single();
+    
+    if (error) {     
+      console.log("Something went wrong while getting data from employee " + error.message); 
       throw new Error("Something went wrong while getting data from employee " + error.message);
     }
   
     if (!data) {
       return ErrorResponse(HTTP_STATUS_CODE.NOT_FOUND, "No Employee Found");
     }
-  
+  console.log("Employee data:"+data);
     return data;
 }
